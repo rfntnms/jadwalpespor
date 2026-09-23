@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pestapora 2026 — Jadwal Gua</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bagel+Fat+One&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --ink:#1d2b28; --muted:#5d6b67; --line:#d9e0d6; --clash:#d8342a; --clash-bg:#fde6e3;
+  --card:#ffffff;
+  /* day theme (set by JS via data-day) */
+  --bg:#f3f8e6; --accent:#12806c; --accent-ink:#ffffff; --hi:#ff5a1f; --soft:#dff0e7;
+}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 150px)}
+*,*::before,*::after{box-sizing:inherit}
+body[data-day="jum"]{--bg:#f3f8e6;--accent:#12806c;--hi:#ff5a1f;--soft:#dcefe5}
+body[data-day="sab"]{--bg:#fdeef0;--accent:#6f5fc4;--hi:#27b24a;--soft:#ebe6fb}
+body[data-day="min"]{--bg:#eaf3fb;--accent:#1a7fd0;--hi:#ec4f97;--soft:#dcecfa}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--ink:#eef3ef;--muted:#a3b0ab;--line:#33403c;--card:#1b2422;--clash-bg:#3d1f1c}
+  :root:not([data-theme="light"]) body[data-day="jum"]{--bg:#0f1a17;--accent:#3fc2a5;--soft:#1c3530}
+  :root:not([data-theme="light"]) body[data-day="sab"]{--bg:#17131f;--accent:#a697f2;--soft:#2a2440}
+  :root:not([data-theme="light"]) body[data-day="min"]{--bg:#0e1722;--accent:#5fb1ef;--soft:#1b2d42}
+}
+:root[data-theme="dark"]{--ink:#eef3ef;--muted:#a3b0ab;--line:#33403c;--card:#1b2422;--clash-bg:#3d1f1c}
+:root[data-theme="dark"] body[data-day="jum"]{--bg:#0f1a17;--accent:#3fc2a5;--soft:#1c3530}
+:root[data-theme="dark"] body[data-day="sab"]{--bg:#17131f;--accent:#a697f2;--soft:#2a2440}
+:root[data-theme="dark"] body[data-day="min"]{--bg:#0e1722;--accent:#5fb1ef;--soft:#1b2d42}
+
+html,body{margin:0}
+body{
+  background:var(--bg); color:var(--ink);
+  font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  font-size:16px; line-height:1.4; min-height:100%;
+  transition:background-color .3s;
+}
+button{font:inherit;color:inherit}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px 96px}
+
+header.top{
+  position:sticky; top:env(safe-area-inset-top,0px); z-index:10;
+  background:var(--bg); padding:14px 0 10px; margin:0 -16px; padding-left:16px; padding-right:16px;
+  border-bottom:2px solid var(--line);
+}
+.brand{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.brand h1{
+  font-family:"Bagel Fat One","Arial Rounded MT Bold","Trebuchet MS",sans-serif;
+  font-weight:400; font-size:34px; line-height:1; margin:0; color:var(--accent);
+  letter-spacing:-.5px; -webkit-text-stroke:0; text-shadow:3px 3px 0 var(--soft);
+}
+.brand .date{font-size:13px;color:var(--muted);text-align:right}
+
+.days{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px}
+.day{
+  border:2px solid var(--line); background:var(--card); border-radius:14px;
+  padding:8px 4px; cursor:pointer; text-align:center; line-height:1.15;
+}
+.day b{display:block;font-size:15px}
+.day span{font-size:12px;color:var(--muted)}
+.day[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.day[aria-pressed="true"] span{color:#fff;opacity:.85}
+
+.views{display:flex;gap:6px;margin-top:10px}
+.view{
+  flex:1; border:0; background:transparent; padding:8px 6px; border-radius:10px; cursor:pointer;
+  font-weight:600; color:var(--muted);
+}
+.view[aria-pressed="true"]{background:var(--soft);color:var(--ink)}
+.count{
+  display:inline-block;min-width:22px;padding:0 6px;border-radius:11px;margin-left:4px;
+  background:var(--hi);color:#fff;font-size:12px;line-height:20px;font-weight:800;
+}
+
+.tools{display:flex;gap:8px;margin:14px 0 8px}
+.search{
+  flex:1; min-width:0; border:2px solid var(--line); background:var(--card); color:var(--ink);
+  border-radius:12px; padding:10px 12px; font:inherit;
+}
+.search:focus{outline:none;border-color:var(--accent)}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:4px 0 10px;scrollbar-width:none;margin:0 -16px;padding-left:16px;padding-right:16px}
+.chips::-webkit-scrollbar{display:none}
+.chip{
+  flex:none; border:1.5px solid var(--line); background:var(--card); border-radius:999px;
+  padding:5px 11px; font-size:13px; cursor:pointer; white-space:nowrap;
+}
+.chip[aria-pressed="true"]{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+.chip i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+
+.hour{
+  font-family:"Bagel Fat One","Arial Rounded MT Bold",sans-serif; font-size:22px; color:var(--accent);
+  margin:18px 0 6px; display:flex; align-items:center; gap:10px;
+}
+.hour::after{content:"";flex:1;height:2px;background:var(--line)}
+
+.act{
+  display:grid; grid-template-columns:62px 1fr 44px; align-items:center; gap:10px;
+  background:var(--card); border:2px solid var(--line); border-radius:14px;
+  padding:10px 10px 10px 12px; margin-bottom:6px; cursor:pointer; width:100%; text-align:left;
+  transition:border-color .15s, background-color .15s;
+}
+.act:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.act .t{font-variant-numeric:tabular-nums;font-size:14px;line-height:1.2;font-weight:600}
+.act .t small{display:block;font-weight:400;color:var(--muted)}
+.act .n{font-weight:800;font-size:16px;line-height:1.2}
+.act .s{font-size:13px;color:var(--muted);margin-top:2px}
+.act .s i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px;vertical-align:0}
+.act .warn{font-size:12px;color:var(--clash);margin-top:3px;font-weight:600}
+.pick{
+  width:36px;height:36px;border-radius:50%;border:2px solid var(--line);justify-self:end;
+  display:grid;place-items:center;font-size:18px;line-height:1;color:transparent;
+}
+.act.on{border-color:var(--accent);background:var(--soft)}
+.act.on .pick{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.empty{text-align:center;padding:48px 16px;color:var(--muted)}
+.empty b{display:block;color:var(--ink);font-size:18px;margin-bottom:6px}
+
+/* my schedule */
+.summary{
+  display:flex;flex-wrap:wrap;gap:8px 16px;margin:14px 0 4px;font-size:14px;color:var(--muted)
+}
+.summary strong{color:var(--ink)}
+.summary .bad strong{color:var(--clash)}
+.gap{font-size:13px;color:var(--muted);padding:4px 0 8px 74px}
+.clash-group{
+  border:2px dashed var(--clash); background:var(--clash-bg); border-radius:16px;
+  padding:10px 8px 4px; margin:6px 0 10px;
+}
+.clash-group > p{margin:0 4px 8px;font-size:13px;font-weight:700;color:var(--clash)}
+.mine .act{cursor:default}
+.mine .x{
+  width:36px;height:36px;border-radius:50%;border:2px solid var(--line);background:transparent;
+  cursor:pointer;justify-self:end;font-size:16px;color:var(--muted)
+}
+.mine .act.now{box-shadow:0 0 0 3px var(--hi)}
+.mine .act.past{opacity:.5}
+.tag-now{display:inline-block;background:var(--hi);color:#fff;border-radius:6px;font-size:11px;font-weight:800;padding:1px 6px;margin-left:6px;vertical-align:2px}
+
+.actions{display:flex;gap:8px;margin-top:18px}
+.btn{
+  flex:1;border:2px solid var(--ink);background:var(--ink);color:var(--bg);border-radius:12px;
+  padding:11px 10px;font-weight:700;cursor:pointer
+}
+.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+.toast{
+  position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);
+  background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;
+  opacity:0;pointer-events:none;transition:.25s;max-width:90%
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body data-day="jum">
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <h1>Pestapora</h1>
+      <div class="date">25–27 Sept 2026<br>Jadwal pilihan lu</div>
+    </div>
+    <div class="days" role="group" aria-label="Pilih hari">
+      <button class="day" data-day="jum" aria-pressed="true"><b>Jumat</b><span>25 Sept</span></button>
+      <button class="day" data-day="sab" aria-pressed="false"><b>Sabtu</b><span>26 Sept</span></button>
+      <button class="day" data-day="min" aria-pressed="false"><b>Minggu</b><span>27 Sept</span></button>
+    </div>
+    <div class="views" role="group" aria-label="Tampilan">
+      <button class="view" data-view="all" aria-pressed="true">Semua penampil</button>
+      <button class="view" data-view="mine" aria-pressed="false">Jadwal gua <span class="count" id="count">0</span></button>
+    </div>
+  </header>
+
+  <main id="main"></main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const RAW = {"jum": [["Pestapora Stage", "15:15", "16:15", "Juicy Luicy"], ["Pestapora Stage", "17:00", "17:45", "Rizky Febian"], ["Pestapora Stage", "19:00", "19:45", "The Changcuters"], ["Pestapora Stage", "20:30", "21:30", "King Nassar"], ["Pestapora Stage", "22:15", "23:15", "Kerispatih x Sammy Simorangkir"], ["Pestapora Stage", "00:00", "01:00", "Whisnu Santika"], ["Sat Set Stage", "16:15", "17:00", "Milledenials"], ["Sat Set Stage", "18:15", "19:00", "Fiersa Besari"], ["Sat Set Stage", "19:45", "20:30", "Pee Wee Gaskins"], ["Sat Set Stage", "21:30", "22:15", "Killing Me Inside Reunion"], ["Sat Set Stage", "23:15", "00:00", "Bondan Prakoso & Fade2Black"], ["Pasar Pasaran Stage", "15:45", "16:30", "Hunian"], ["Pasar Pasaran Stage", "17:00", "17:45", "Romanssa"], ["Pasar Pasaran Stage", "18:15", "19:00", "Teenage Jazz Star"], ["Pasar Pasaran Stage", "19:30", "20:15", "Gangstarasta"], ["Pasar Pasaran Stage", "20:45", "21:30", "Eleventwelfth"], ["Pasar Pasaran Stage", "22:00", "22:45", "Sukses Lancar Rejeki"], ["Pasar Pasaran Stage", "23:15", "00:00", "Aldi Taher Gallagher"], ["Gegap Gempita Stage", "15:45", "16:30", "Mombrimz"], ["Gegap Gempita Stage", "17:00", "17:45", "Tuesday Beach Club"], ["Gegap Gempita Stage", "18:30", "20:00", "Tuman Soundsystem"], ["Gegap Gempita Stage", "20:00", "21:30", "The Ratpack"], ["Gegap Gempita Stage", "21:30", "22:00", "Koddim Sound"], ["Gegap Gempita Stage", "23:00", "01:00", "Namoy Budaya x Matter Mos"], ["Double Deck Stage", "00:00", "01:00", "Om Abidin"], ["Stand Up Indo", "17:45", "18:05", "Standup Comedy: Riandi Bamat"], ["Stand Up Indo", "19:25", "19:55", "Music Comic: Davi Sumbing"], ["Stand Up Indo", "20:40", "21:20", "Adhitia Sofyan"], ["Stand Up Indo", "22:10", "22:50", "Endah N Rhesa"], ["BOSS Stage", "15:15", "16:15", "Vierratale"], ["BOSS Stage", "16:45", "17:45", "Ipang Lazuardi"], ["BOSS Stage", "18:25", "19:25", "Tompi"], ["BOSS Stage", "19:55", "20:40", "The Adams"], ["BOSS Stage", "21:10", "22:10", "Ari Lasso"], ["BOSS Stage", "22:40", "23:25", "The Coconuttreez"], ["BOSS Stage", "23:55", "01:00", "Arlida Putri"], ["Hingar Bingar Stage", "15:00", "15:45", "Wijaya 80"], ["Hingar Bingar Stage", "16:15", "17:00", "Million Hope x Ardhito Pramono"], ["Hingar Bingar Stage", "18:15", "19:00", "Biru Baru"], ["Hingar Bingar Stage", "19:30", "20:15", "NTRL"], ["Hingar Bingar Stage", "20:45", "21:30", "IDGITAF"], ["Hingar Bingar Stage", "22:00", "22:45", "Dhyo Haw"], ["Hingar Bingar Stage", "23:15", "00:15", "Reality Club"], ["Taman Riang Gembira", "15:30", "16:15", "Danilla"], ["Taman Riang Gembira", "17:00", "17:45", "Rafi Sudirman & Kawan-Kawan"], ["Taman Riang Gembira", "18:55", "19:35", "Erwin Gutawa Orchestra ft. Ardhito Pramono & Danilla"], ["Taman Riang Gembira", "20:15", "21:00", "Alkateri"], ["Taman Riang Gembira", "21:45", "22:30", "David Bayu"], ["Taman Riang Gembira", "23:15", "00:00", "Shaggy Dog"], ["Klab Klub Stage", "15:30", "16:15", "Beside"], ["Klab Klub Stage", "16:45", "17:30", "GME"], ["Klab Klub Stage", "18:15", "19:00", "Ras Muhamad"], ["Klab Klub Stage", "19:30", "20:15", "Goodnight Electric"], ["Klab Klub Stage", "20:45", "21:30", "Monkey to Millionaire"], ["Klab Klub Stage", "22:00", "22:45", "Pure Saturday"], ["Klab Klub Stage", "23:15", "00:00", "Gledeg"], ["Klab Klub Stage", "00:15", "01:15", "Hura Hura Club"], ["24 Jamming Stage", "16:15", "17:00", "K★tro Band"], ["24 Jamming Stage", "18:15", "18:55", "Pendulum"], ["24 Jamming Stage", "19:35", "20:15", "Racun Kota"], ["24 Jamming Stage", "21:00", "21:45", "Maria Tambun"], ["24 Jamming Stage", "22:30", "23:15", "The Upstairs"], ["24 Jamming Stage", "00:00", "01:00", "Prontaxan"], ["Going Noodles", "20:00", "21:00", "Slothkidd"], ["Going Noodles", "21:05", "22:05", "Southbe + Pierre Lynx"], ["Going Noodles", "22:10", "22:40", "Fury+"], ["Going Noodles", "22:45", "23:30", "Riski Inrahim, Leend, Fat Rorry"], ["Authenticity Soundroom", "16:30", "17:15", "Domapine"], ["Authenticity Soundroom", "17:45", "18:30", "Tablesturned"], ["Authenticity Soundroom", "19:00", "19:45", "Voxxes"], ["Authenticity Soundroom", "20:15", "21:00", "Film."], ["Authenticity Soundroom", "21:30", "22:30", "Mister Nobody x Black Horses"], ["Authenticity Soundroom", "23:00", "23:45", "Alkateri (Electric Set)"], ["PATS", "15:00", "16:00", "Ch4n x Ravas (Raven Society, Dusk JKT)"], ["PATS", "16:00", "17:00", "Cheng x Shakur (Broken Central, Tenoften)"], ["PATS", "17:00", "18:00", "Joses x Cibun (Phoria)"], ["PATS", "18:00", "19:00", "Kemon x Calvinn (Maze)"], ["PATS", "19:00", "20:00", "Leonardo x Wakeupryan"], ["PATS", "20:00", "21:00", "PATS Angels"], ["PATS", "21:00", "22:00", "Athar x Abraham Andrew"], ["PATS", "22:00", "23:00", "A$ (PATS Entertainment)"], ["PATS", "23:00", "00:00", "Qees x Qeela (Pink Baddies)"], ["Sound Communion by Deathrockstar", "16:00", "16:30", "Lumeenals"], ["Sound Communion by Deathrockstar", "16:50", "17:20", "Electric Cats"], ["Sound Communion by Deathrockstar", "17:40", "18:10", "Turbokidz"], ["Sound Communion by Deathrockstar", "18:40", "19:20", "Kathmandu"], ["Sound Communion by Deathrockstar", "19:50", "20:30", "Rasyiqa"], ["Sound Communion by Deathrockstar", "21:00", "21:40", "Prince Husein"], ["Sound Communion by Deathrockstar", "22:10", "22:50", "Hermione"], ["Vixtape", "16:00", "16:45", "Presence"], ["Vixtape", "17:15", "18:00", "Binar"], ["Vixtape", "18:30", "19:15", "Zzuf"], ["Vixtape", "19:45", "20:30", "Red Voqus"], ["Vixtape", "21:00", "21:45", "The Rang-Rangs"], ["Vixtape", "22:00", "22:55", "Philip Ponk x Danger Dope"], ["Vixtape", "23:00", "00:00", "Oschiezheyenk"], ["Earhouse", "15:45", "16:15", "Iswara \"Nongkrong Bareng Rafi Sudirman\""], ["Earhouse", "16:15", "16:45", "Iswara \"Nongkrong Bareng Bani\""], ["Earhouse", "17:00", "17:45", "Silent Gigs: Aruma"], ["Earhouse", "20:00", "20:45", "Silent Gigs Jazz Time: Dua Empat"], ["Earhouse", "21:30", "22:15", "Silent Gigs: More on Mumbles"], ["Earhouse", "23:00", "23:45", "Silent Gigs: Biancadimas"], ["Westwew", "18:15", "19:00", "Zoonde"], ["Westwew", "19:15", "20:00", "Jey Denise"], ["Westwew", "20:15", "20:45", "Ageng Carlitos"], ["Westwew", "21:00", "22:00", "Eastblake"], ["Podkesmas Asia Stage", "15:00", "16:00", "Podkes Badan Besar"], ["Podkesmas Asia Stage", "16:30", "17:30", "TheOvertunes"], ["Podkesmas Asia Stage", "18:30", "19:30", "Duo Bahlul"], ["Podkesmas Asia Stage", "20:00", "21:00", "Ten2Five"], ["Podkesmas Asia Stage", "21:30", "22:30", "Jebung"]], "sab": [["Pestapora Stage", "14:15", "15:15", "Maliq & D'Essentials"], ["Pestapora Stage", "16:00", "17:00", "Mahalini"], ["Pestapora Stage", "18:15", "19:15", "Raisa ft. Andi Rianto"], ["Pestapora Stage", "20:00", "20:45", "Inul Daratista"], ["Pestapora Stage", "21:30", "22:45", "Sheila on 7"], ["Pestapora Stage", "23:30", "00:30", "Souljah"], ["Sat Set Stage", "15:15", "16:00", "Dere"], ["Sat Set Stage", "17:00", "17:45", "Lomba Sihir"], ["Sat Set Stage", "19:15", "20:00", "Nadhif Basalamah"], ["Sat Set Stage", "20:45", "21:30", "Bravy"], ["Sat Set Stage", "22:45", "23:30", "Rumahsakit"], ["Pasar Pasaran Stage", "14:15", "15:05", "Naura, Neona"], ["Pasar Pasaran Stage", "15:35", "16:20", "1Tengah"], ["Pasar Pasaran Stage", "16:50", "17:35", "Baale"], ["Pasar Pasaran Stage", "18:15", "19:00", "HFDZKHR"], ["Pasar Pasaran Stage", "19:30", "20:15", "Jo Soegono"], ["Pasar Pasaran Stage", "20:45", "21:30", "Dialog Dini Hari"], ["Pasar Pasaran Stage", "22:00", "22:45", "Straight Answer"], ["Pasar Pasaran Stage", "23:15", "00:15", "Teenage Dut Star"], ["Gegap Gempita Stage", "14:50", "15:05", "Seen"], ["Gegap Gempita Stage", "15:05", "15:35", "Marbles"], ["Gegap Gempita Stage", "15:55", "16:40", "Matter Mos"], ["Gegap Gempita Stage", "17:00", "17:45", "Agrikulture"], ["Gegap Gempita Stage", "18:30", "20:00", "Pak Kardiman"], ["Gegap Gempita Stage", "20:00", "21:30", "Iqbal Jdoha & MC Yon"], ["Gegap Gempita Stage", "21:30", "23:00", "Yups"], ["Gegap Gempita Stage", "23:00", "01:00", "Ras Muhamad & Dirayha"], ["Double Deck Stage", "00:00", "01:00", "Robokop"], ["Stand Up Indo", "15:15", "15:55", "Mawar De Jongh"], ["Stand Up Indo", "16:30", "17:10", "Katyana, El Putra Sarira"], ["Stand Up Indo", "17:45", "18:05", "Standup Comedy: Habibie Dipalelu"], ["Stand Up Indo", "19:25", "20:05", "Music Comic: Orkes Pensil Alis"], ["Stand Up Indo", "20:40", "21:20", "Kevin Cotok"], ["Stand Up Indo", "21:55", "22:40", "Jason Ranti"], ["BOSS Stage", "14:15", "15:15", "Whisnu Santika (Map of Feelings Set)"], ["BOSS Stage", "15:45", "16:30", "Andmesh"], ["BOSS Stage", "17:00", "17:45", "Barasuara"], ["BOSS Stage", "18:25", "19:25", "Perunggu"], ["BOSS Stage", "19:55", "20:40", "NPD"], ["BOSS Stage", "21:10", "21:55", "Naykilla"], ["BOSS Stage", "22:25", "23:25", "Tenxi x Dia"], ["BOSS Stage", "23:55", "00:55", "Happy Asmara"], ["Hingar Bingar Stage", "15:15", "16:00", "Statelines x Rayhan Noor"], ["Hingar Bingar Stage", "16:30", "17:30", "Raim Laode"], ["Hingar Bingar Stage", "18:15", "19:00", "Pamungkas"], ["Hingar Bingar Stage", "19:30", "20:15", "Lesti Kejora"], ["Hingar Bingar Stage", "20:45", "21:30", "The Sigit"], ["Hingar Bingar Stage", "22:00", "23:00", "Rhoma Irama & Soneta"], ["Hingar Bingar Stage", "23:15", "00:15", "DNA"], ["Taman Riang Gembira", "15:30", "16:15", "Burgerkill"], ["Taman Riang Gembira", "17:00", "17:45", "Enau"], ["Taman Riang Gembira", "19:00", "19:45", "Erwin Gutawa Orchestra ft. Fourtwnty"], ["Taman Riang Gembira", "20:30", "21:15", "Sidney Mohede"], ["Taman Riang Gembira", "22:00", "23:00", "Tony Q Rastafara"], ["Taman Riang Gembira", "23:45", "00:30", "Trio Ambisi"], ["Klab Klub Stage", "14:30", "15:15", "The Panasdalam Bank"], ["Klab Klub Stage", "15:45", "16:30", "Zat Kimia"], ["Klab Klub Stage", "17:00", "17:45", "Saykoji"], ["Klab Klub Stage", "18:30", "19:15", "Under the Big Bright Yellow Sun ft. Vicky Mono"], ["Klab Klub Stage", "19:45", "20:30", "Koil"], ["Klab Klub Stage", "21:00", "21:45", "The Paps"], ["Klab Klub Stage", "22:15", "23:00", "Stand Here Alone"], ["Klab Klub Stage", "23:30", "00:30", "Morfem"], ["24 Jamming Stage", "14:45", "15:30", "Lair"], ["24 Jamming Stage", "16:15", "17:00", "Domikado$"], ["24 Jamming Stage", "18:15", "19:00", "Indische Party"], ["24 Jamming Stage", "19:45", "20:30", "Fable"], ["24 Jamming Stage", "21:15", "22:00", "The Sastro"], ["24 Jamming Stage", "23:00", "23:45", "Sindang (Sinema Dangdut)"], ["24 Jamming Stage", "00:30", "01:15", "Mela Rio"], ["Going Noodles", "19:30", "20:30", "Aldo Abdas"], ["Going Noodles", "20:35", "21:05", "Suisei"], ["Going Noodles", "21:10", "21:40", "Obyrins & Azura"], ["Going Noodles", "21:45", "22:15", "6Sentani"], ["Going Noodles", "22:20", "23:20", "#PartyWithBaddiePusat"], ["Authenticity Soundroom", "16:30", "17:15", "Ratee"], ["Authenticity Soundroom", "17:45", "18:30", "Mella"], ["Authenticity Soundroom", "19:00", "19:45", "Kapal Udara"], ["Authenticity Soundroom", "20:15", "21:00", "Tarrarin"], ["Authenticity Soundroom", "21:30", "22:30", "Lor x Moneva"], ["Authenticity Soundroom", "23:00", "23:45", "Biru Baru"], ["PATS", "15:00", "16:00", "Pakopapi x Nade (Tenoften)"], ["PATS", "16:00", "17:00", "Piers x Bradley (Sinsuela)"], ["PATS", "17:00", "18:00", "Marissa (KMB) x Darzky (Breaking Beats)"], ["PATS", "18:00", "19:00", "Syntax x Elmor (Lucennejkt)"], ["PATS", "19:00", "20:00", "Yups x Bayem"], ["PATS", "20:00", "21:00", "PMS"], ["PATS", "21:00", "22:00", "Miracle (PATS Entertainment)"], ["PATS", "22:00", "23:00", "PATS Syndicate"], ["PATS", "23:00", "00:00", "PATS Mafia x Pink Baddies"], ["Sound Communion by Deathrockstar", "15:00", "15:30", "Ninety Horsepower"], ["Sound Communion by Deathrockstar", "15:50", "16:20", "Piknik"], ["Sound Communion by Deathrockstar", "16:40", "17:40", "Tamago x The Neverackers"], ["Sound Communion by Deathrockstar", "18:00", "18:40", "Conversation Without Talk"], ["Sound Communion by Deathrockstar", "19:00", "19:40", "After Hours"], ["Sound Communion by Deathrockstar", "20:10", "20:50", "Supple"], ["Sound Communion by Deathrockstar", "21:10", "21:50", "BATDD"], ["Sound Communion by Deathrockstar", "22:20", "23:00", "Eleanor Whisper"], ["Vixtape", "16:00", "16:45", "Parasupra"], ["Vixtape", "17:15", "18:00", "Harlan Boer"], ["Vixtape", "18:30", "19:15", "The Wellington"], ["Vixtape", "19:45", "20:30", "Bin Idris"], ["Vixtape", "21:00", "21:45", "Seaside"], ["Vixtape", "22:00", "22:55", "Mayhem Extended"], ["Vixtape", "23:00", "00:00", "Esoterica Groove"], ["Earhouse", "15:00", "15:45", "Earhouse Listening Club Hangout: Biru Baru Buka Project"], ["Earhouse", "16:00", "16:45", "Cosmo Talk with Neona"], ["Earhouse", "17:00", "17:45", "Silent Gigs: Tarasinta"], ["Earhouse", "20:00", "20:45", "Silent Gigs Jazz Time: Sokhi"], ["Earhouse", "21:30", "22:15", "Silent Gigs: Rangkai"], ["Westwew", "18:15", "19:00", "NDGJ"], ["Westwew", "19:00", "20:00", "Danger Dope"], ["Westwew", "20:15", "21:00", "Widzard"], ["Westwew", "21:15", "22:00", "Sing Along Hip Hop RnB with Fangboogie"], ["Westwew", "22:00", "23:00", "Raggil Suliza"], ["Podkesmas Asia Stage", "14:30", "15:30", "Podcast Seminggu"], ["Podkesmas Asia Stage", "16:00", "17:00", "La Luna"], ["Podkesmas Asia Stage", "18:30", "19:30", "Ada Podcast"], ["Podkesmas Asia Stage", "20:00", "20:45", "Sir Dandy (Akustik Format)"], ["Podkesmas Asia Stage", "21:30", "22:30", "Mingse & Akbar Chalay Karaoke Set"]], "min": [["Pestapora Stage", "14:30", "15:15", "Salma Salsabil"], ["Pestapora Stage", "16:00", "17:00", "Tulus"], ["Pestapora Stage", "18:15", "19:15", "Syahrini"], ["Pestapora Stage", "20:00", "21:00", "For Revenge feat Tepe"], ["Pestapora Stage", "21:45", "22:45", "Dewa 19 feat Ello"], ["Pestapora Stage", "23:30", "00:30", "NDX AKA"], ["Sat Set Stage", "15:15", "16:00", "Yori"], ["Sat Set Stage", "17:00", "17:45", "Adrian Khalif"], ["Sat Set Stage", "19:15", "20:00", "Indahkus"], ["Sat Set Stage", "21:00", "21:45", "Thirteen x Side•B"], ["Sat Set Stage", "22:45", "23:30", "YoungLex"], ["Pasar Pasaran Stage", "14:30", "15:15", "Beltigs"], ["Pasar Pasaran Stage", "15:45", "16:30", "Grrrl Gang"], ["Pasar Pasaran Stage", "17:00", "17:45", "Mondo Gascaro"], ["Pasar Pasaran Stage", "18:15", "19:00", "Assia Keva"], ["Pasar Pasaran Stage", "19:30", "20:15", "Oslo Ibrahim"], ["Pasar Pasaran Stage", "20:45", "21:30", "Romantic Echoes"], ["Pasar Pasaran Stage", "22:00", "22:45", "Luby Sparks"], ["Pasar Pasaran Stage", "23:15", "00:15", "Skastra"], ["Sector B", "16:30", "17:30", "Decemberkidd"], ["Sector B", "18:15", "19:00", "Arsyh x Erga"], ["Sector B", "19:00", "19:45", "Joana"], ["Sector B", "19:45", "20:30", "Garry Ang x Papipul"], ["Sector B", "20:30", "21:15", "Moskilove x HannahX"], ["Sector B", "21:15", "22:30", "Jayjaxx"], ["Sector B", "22:30", "23:30", "Adnan Veron x HBRP"], ["Sector B", "23:30", "00:30", "Robstee"], ["Sector B", "00:30", "01:30", "Bravy x Ibot13"], ["Double Deck Stage", "18:15", "18:55", "Nyanyi Bareng Jakarta"], ["Double Deck Stage", "00:00", "01:00", "Ucupop"], ["Stand Up Indo", "16:15", "17:00", "Twentynineteens"], ["Stand Up Indo", "17:45", "18:05", "Standup Comedy: Zidan, Reynaldi Bahar"], ["Stand Up Indo", "18:20", "18:50", "Vindes Mempersembahkan...."], ["Stand Up Indo", "19:20", "19:50", "Music Comic: Jab Bady"], ["Stand Up Indo", "20:35", "21:15", "Ucox Bongax"], ["Stand Up Indo", "22:20", "23:00", "Panggung Trinity Karaoke: Tissa Biani, Tsaqib Restu, Felicia, Vedra Sheera"], ["Stand Up Indo", "23:50", "00:35", "Namoy Budaya"], ["BOSS Stage", "14:25", "15:10", "Lalahuta"], ["BOSS Stage", "15:40", "16:25", "Bernadya"], ["BOSS Stage", "16:55", "17:40", "Agak Laen"], ["BOSS Stage", "18:20", "19:20", "FSTVLST"], ["BOSS Stage", "19:50", "20:35", "Project Pop"], ["BOSS Stage", "21:05", "22:20", "Sunday School Era"], ["BOSS Stage", "22:50", "23:50", "Tipe-X Orcheska"], ["Hingar Bingar Stage", "15:00", "15:45", "Sal Priadi"], ["Hingar Bingar Stage", "16:25", "17:10", "Bingar x Pandu Fuzztoni"], ["Hingar Bingar Stage", "18:15", "19:00", "God Bless"], ["Hingar Bingar Stage", "19:30", "20:30", "J-Rocks"], ["Hingar Bingar Stage", "21:00", "21:45", "Parade Hujan"], ["Hingar Bingar Stage", "22:15", "23:15", "Armada"], ["Hingar Bingar Stage", "23:45", "00:45", "Moluccan Soul x Miguell Kaidel"], ["Taman Riang Gembira", "15:35", "16:20", "Punxgoaran"], ["Taman Riang Gembira", "17:00", "17:45", "Float"], ["Taman Riang Gembira", "19:00", "19:45", "Erwin Gutawa Orchestra ft. Afgan"], ["Taman Riang Gembira", "20:30", "21:15", "Murphy Radio"], ["Taman Riang Gembira", "22:00", "22:45", "510"], ["Taman Riang Gembira", "23:30", "00:30", "Jirayut"], ["Klab Klub Stage", "14:30", "15:15", "Sunlotus"], ["Klab Klub Stage", "15:45", "16:30", "Asylum Uniform"], ["Klab Klub Stage", "17:00", "17:45", "The Blues Party (Kevin Black Horses, Gugun Blues Shelter, Attir Speaker First, Arya Novanda, Eross Candra)"], ["Klab Klub Stage", "18:15", "19:00", "Colorcode"], ["Klab Klub Stage", "19:30", "20:15", "Thee Marloes"], ["Klab Klub Stage", "20:45", "21:30", "MCPR"], ["Klab Klub Stage", "22:00", "22:45", "Denny Frust"], ["Klab Klub Stage", "23:15", "00:00", "Teenage Death Star"], ["24 Jamming Stage", "16:20", "17:00", "Kupukupu"], ["24 Jamming Stage", "18:15", "19:00", "Ballads of the Cliche"], ["24 Jamming Stage", "19:45", "20:30", "Ministry Of"], ["24 Jamming Stage", "21:15", "22:00", "Koddim Sound x Tuan Jenggo x Dangerdub"], ["24 Jamming Stage", "22:45", "23:30", "Rub of Rub"], ["24 Jamming Stage", "00:30", "01:15", "Klab 73 Soundsystem"], ["Going Noodles", "19:00", "20:00", "Friday Noraebang"], ["Going Noodles", "20:05", "20:25", "Ryo"], ["Going Noodles", "20:30", "21:00", "Farrel Hilal"], ["Going Noodles", "21:05", "22:05", "Alva Gracia B2B Concerto"], ["Going Noodles", "22:10", "23:10", "Jebung"], ["Authenticity Soundroom", "16:30", "17:15", "Kecoud"], ["Authenticity Soundroom", "17:45", "18:30", "Ismam Saurus"], ["Authenticity Soundroom", "19:00", "19:45", "Maisonc"], ["Authenticity Soundroom", "20:15", "21:00", "Yoko City Ghost"], ["Authenticity Soundroom", "21:30", "22:30", "Mad Madmen x Sunwich"], ["Authenticity Soundroom", "23:00", "23:45", "The Sastro \"Electric Set\""], ["PATS", "15:00", "16:00", "Josh x JL (DPR Network)"], ["PATS", "16:00", "17:00", "Geo x Kyro (G'Grims)"], ["PATS", "17:00", "18:00", "Ramzu (IPB) x Calvinnshere (IPJ)"], ["PATS", "18:00", "19:00", "Lerbe (Virginia Bloc) x Zizu (SB Collective)"], ["PATS", "19:00", "20:00", "N4NO (PATS Entertainment)"], ["PATS", "20:00", "21:00", "Arras x L4W (PATS University)"], ["PATS", "21:00", "22:00", "A$ x Harrey (PATS Energy)"], ["PATS", "22:00", "23:00", "Pidut (PATS Entertainment)"], ["PATS", "23:00", "00:00", "PATS Family"], ["Sound Communion by Deathrockstar", "15:00", "15:30", "Maseta"], ["Sound Communion by Deathrockstar", "15:50", "16:20", "Atsea"], ["Sound Communion by Deathrockstar", "16:40", "17:20", "Gabriella Fernaldi"], ["Sound Communion by Deathrockstar", "17:40", "18:20", "Holy City Rollers"], ["Sound Communion by Deathrockstar", "18:50", "19:30", "Jugo Djarot"], ["Sound Communion by Deathrockstar", "20:00", "20:40", "Patras"], ["Sound Communion by Deathrockstar", "21:10", "21:50", "The Regards"], ["Sound Communion by Deathrockstar", "22:20", "23:00", "Rimba"], ["Vixtape", "16:00", "16:45", "Taktis"], ["Vixtape", "17:15", "18:00", "L'Alphalpha"], ["Vixtape", "18:30", "19:15", "Lorjhu'"], ["Vixtape", "19:45", "20:30", "Rajah"], ["Vixtape", "21:00", "21:45", "Det-Plag Lust"], ["Vixtape", "22:00", "22:55", "Jabi x Nawing (Poppin Class)"], ["Vixtape", "23:00", "00:00", "Kenny Gabriel"], ["Earhouse", "15:00", "15:45", "Silent Gigs: Budie Tanzania"], ["Earhouse", "16:00", "16:45", "The Rockin' Life Session"], ["Earhouse", "17:00", "17:45", "Silent Gigs: Zhafari"], ["Earhouse", "20:00", "20:45", "Silent Gigs Jazz Time: Anyam (Dinar \"Kunay\" Rizkianti, Sri Hanuraga dan Stevie J.Sutanto)"], ["Earhouse", "21:15", "22:00", "Silent Gigs: Adhitia Sofyan"], ["Westwew", "17:00", "17:45", "Makatita"], ["Westwew", "18:15", "19:00", "Gavendri"], ["Westwew", "19:15", "20:00", "Isseysan with Tramadoya"], ["Westwew", "20:15", "22:15", "Poppin Class x Westwew"], ["Podkesmas Asia Stage", "14:30", "15:30", "Podcast Bram"], ["Podkesmas Asia Stage", "16:00", "17:00", "The Sasonos Fam"], ["Podkesmas Asia Stage", "18:30", "19:30", "Podkesan Cur"], ["Podkesmas Asia Stage", "20:00", "21:00", "Podkesmas"], ["Podkesmas Asia Stage", "21:30", "22:30", "Darto Mix (Mix on Da Mix)"]]};
+const DAY_INFO = {
+  jum:{label:"Jumat, 25 Sept", date:"2026-09-25"},
+  sab:{label:"Sabtu, 26 Sept", date:"2026-09-26"},
+  min:{label:"Minggu, 27 Sept", date:"2026-09-27"}
+};
+const STAGE_COLORS = ["#ff5a1f","#12806c","#6f5fc4","#e0a100","#ec4f97","#1a7fd0","#2aa84a","#b5582b","#8e44ad",
+  "#00a3a3","#d8342a","#5c7cfa","#9c6f00","#c2185b","#00897b","#7b5e57","#3949ab","#f06292","#558b2f"];
+
+const toMin = t => { let [h,m] = t.split(":").map(Number); if (h < 14) h += 24; return h*60+m; };
+const fmt = t => t.replace(":", ".");
+const durTxt = m => m >= 60 ? (Math.floor(m/60)+" jam"+(m%60?" "+(m%60)+" mnt":"")) : m+" mnt";
+
+// Build acts
+const ACTS = {};
+const STAGES = {};
+for (const d of Object.keys(RAW)) {
+  const order = [];
+  ACTS[d] = RAW[d].map(([stage,s,e,name]) => {
+    if (!order.includes(stage)) order.push(stage);
+    return {id:`${d}|${stage}|${s}|${name}`, day:d, stage, s, e, name, a:toMin(s), b:toMin(e)};
+  }).sort((x,y) => x.a - y.a || x.stage.localeCompare(y.stage));
+  STAGES[d] = order;
+}
+const allStages = [...new Set(Object.values(STAGES).flat())];
+const stageColor = st => STAGE_COLORS[allStages.indexOf(st) % STAGE_COLORS.length];
+
+// State + storage
+const KEY = "pestapora2026:picks";
+let picks = new Set();
+try { const v = localStorage.getItem(KEY); if (v) picks = new Set(JSON.parse(v)); } catch(e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify([...picks])); } catch(e) {} };
+let ui = {day:"jum", view:"all", q:"", stage:null};
+try { const u = JSON.parse(localStorage.getItem(KEY+":ui")||"null"); if (u) ui = {...ui, day:u.day||"jum", view:u.view||"all"}; } catch(e) {}
+const saveUi = () => { try { localStorage.setItem(KEY+":ui", JSON.stringify({day:ui.day, view:ui.view})); } catch(e) {} };
+
+const overlaps = (x,y) => x.a < y.b && y.a < x.b;
+const picked = d => ACTS[d].filter(a => picks.has(a.id));
+const esc = s => s.replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+// "Now" in Jakarta time, mapped onto festival day minutes
+function nowInfo() {
+  try {
+    const parts = new Intl.DateTimeFormat("en-CA",{timeZone:"Asia/Jakarta",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit",hour12:false}).formatToParts(new Date());
+    const g = t => parts.find(p => p.type===t).value;
+    let date = `${g("year")}-${g("month")}-${g("day")}`, h = +g("hour") % 24, m = +g("minute");
+    if (h < 6) { // after midnight belongs to previous festival day
+      const dt = new Date(date+"T00:00:00Z"); dt.setUTCDate(dt.getUTCDate()-1);
+      date = dt.toISOString().slice(0,10); h += 24;
+    }
+    const day = Object.keys(DAY_INFO).find(k => DAY_INFO[k].date === date);
+    return day ? {day, min:h*60+m} : null;
+  } catch(e) { return null; }
+}
+
+function render() {
+  document.body.dataset.day = ui.day;
+  document.querySelectorAll(".day").forEach(b => b.setAttribute("aria-pressed", b.dataset.day===ui.day));
+  document.querySelectorAll(".view").forEach(b => b.setAttribute("aria-pressed", b.dataset.view===ui.view));
+  document.getElementById("count").textContent = picked(ui.day).length;
+  ui.view === "all" ? renderAll() : renderMine();
+}
+
+function actRow(a, opts={}) {
+  const on = picks.has(a.id);
+  const warn = opts.warn ? `<div class="warn">Bentrok dengan ${esc(opts.warn)}</div>` : "";
+  return `<button class="act ${on?"on":""}" data-id="${esc(a.id)}" aria-pressed="${on}" aria-label="${esc(a.name)}, ${fmt(a.s)} sampai ${fmt(a.e)}, ${esc(a.stage)}">
+    <div class="t">${fmt(a.s)}<small>${fmt(a.e)}</small></div>
+    <div><div class="n">${esc(a.name)}</div><div class="s"><i style="background:${stageColor(a.stage)}"></i>${esc(a.stage)}</div>${warn}</div>
+    <div class="pick" aria-hidden="true">✓</div>
+  </button>`;
+}
+
+function renderAll() {
+  const main = document.getElementById("main");
+  const q = ui.q.trim().toLowerCase();
+  const mine = picked(ui.day);
+  let list = ACTS[ui.day].filter(a =>
+    (!ui.stage || a.stage === ui.stage) &&
+    (!q || a.name.toLowerCase().includes(q) || a.stage.toLowerCase().includes(q)));
+
+  const stagesHere = STAGES[ui.day];
+  if (ui.stage && !stagesHere.includes(ui.stage)) ui.stage = null;
+
+  let html = `<div class="tools"><input class="search" id="q" type="search" placeholder="Cari band atau stage" value="${esc(ui.q)}" autocomplete="off"></div>
+  <div class="chips" role="group" aria-label="Filter stage">
+    <button class="chip" data-stage="" aria-pressed="${!ui.stage}">Semua stage</button>
+    ${stagesHere.map(s => `<button class="chip" data-stage="${esc(s)}" aria-pressed="${ui.stage===s}"><i style="background:${stageColor(s)}"></i>${esc(s)}</button>`).join("")}
+  </div>`;
+
+  if (!list.length) {
+    html += `<div class="empty"><b>Nggak ada yang cocok</b>Coba kata kunci lain atau pilih "Semua stage".</div>`;
+  } else {
+    let lastHour = null;
+    for (const a of list) {
+      const hr = Math.floor(a.a/60) % 24;
+      if (hr !== lastHour) { html += `<div class="hour">${String(hr).padStart(2,"0")}.00</div>`; lastHour = hr; }
+      let warn = null;
+      if (!picks.has(a.id)) {
+        const c = mine.find(p => overlaps(p,a));
+        if (c) warn = c.name;
+      }
+      html += actRow(a, {warn});
+    }
+  }
+  const prevFocus = document.activeElement && document.activeElement.id === "q";
+  const caret = prevFocus ? document.activeElement.selectionStart : null;
+  main.innerHTML = html;
+  if (prevFocus) { const el = document.getElementById("q"); el.focus(); try{el.setSelectionRange(caret,caret);}catch(e){} }
+}
+
+function renderMine() {
+  const main = document.getElementById("main");
+  const list = picked(ui.day);
+  if (!list.length) {
+    main.innerHTML = `<div class="empty"><b>Belum ada pilihan buat ${DAY_INFO[ui.day].label}</b>Buka "Semua penampil", lalu tap band yang mau lu tonton.</div>`;
+    return;
+  }
+  // group overlapping picks into clusters
+  const groups = [];
+  for (const a of list) {
+    const g = groups[groups.length-1];
+    if (g && a.a < g.end) { g.items.push(a); g.end = Math.max(g.end, a.b); }
+    else groups.push({items:[a], start:a.a, end:a.b});
+  }
+  const clashes = groups.filter(g => g.items.length > 1).length;
+  const total = list.reduce((t,a) => t + (a.b-a.a), 0);
+  const now = nowInfo();
+
+  let html = `<div class="summary">
+    <span><strong>${list.length}</strong> penampil</span>
+    <span><strong>${fmt(list[0].s)}–${fmt(list.reduce((m,a)=>a.b>m.b?a:m).e)}</strong></span>
+    <span><strong>${durTxt(total)}</strong> total musik</span>
+    <span class="${clashes?"bad":""}"><strong>${clashes}</strong> bentrok</span>
+  </div><div class="mine">`;
+
+  let prevEnd = null;
+  for (const g of groups) {
+    if (prevEnd !== null && g.start > prevEnd) html += `<div class="gap">Jeda ${durTxt(g.start - prevEnd)}</div>`;
+    const rows = g.items.map(a => {
+      let cls = "";
+      let tag = "";
+      if (now && now.day === ui.day) {
+        if (now.min >= a.a && now.min < a.b) { cls = "now"; tag = `<span class="tag-now">Lagi main</span>`; }
+        else if (now.min >= a.b) cls = "past";
+      }
+      return `<div class="act on ${cls}">
+        <div class="t">${fmt(a.s)}<small>${fmt(a.e)}</small></div>
+        <div><div class="n">${esc(a.name)}${tag}</div><div class="s"><i style="background:${stageColor(a.stage)}"></i>${esc(a.stage)}</div></div>
+        <button class="x" data-remove="${esc(a.id)}" aria-label="Hapus ${esc(a.name)}">✕</button>
+      </div>`;
+    }).join("");
+    html += g.items.length > 1
+      ? `<div class="clash-group"><p>Bentrok, pilih salah satu atau nonton sebagian</p>${rows}</div>`
+      : rows;
+    prevEnd = Math.max(prevEnd ?? 0, g.end);
+  }
+  html += `</div><div class="actions">
+    <button class="btn" id="copy">Salin jadwal</button>
+    <button class="btn ghost" id="clear">Kosongkan hari ini</button>
+  </div>`;
+  main.innerHTML = html;
+}
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove("show"), 1800);
+}
+
+document.addEventListener("click", e => {
+  const day = e.target.closest(".day");
+  if (day) { ui.day = day.dataset.day; ui.stage = null; saveUi(); render(); window.scrollTo(0,0); return; }
+  const view = e.target.closest(".view");
+  if (view) { ui.view = view.dataset.view; saveUi(); render(); window.scrollTo(0,0); return; }
+  const chip = e.target.closest(".chip");
+  if (chip) { ui.stage = chip.dataset.stage || null; render(); return; }
+  const rm = e.target.closest("[data-remove]");
+  if (rm) { picks.delete(rm.dataset.remove); save(); render(); toast("Dihapus dari jadwal"); return; }
+  const act = e.target.closest("button.act");
+  if (act) {
+    const id = act.dataset.id;
+    if (picks.has(id)) { picks.delete(id); toast("Dihapus dari jadwal"); }
+    else { picks.add(id); toast("Ditambahkan ke jadwal"); }
+    save(); render(); return;
+  }
+  if (e.target.id === "copy") {
+    const list = picked(ui.day);
+    const txt = `Pestapora — ${DAY_INFO[ui.day].label}\n` + list.map(a => `${fmt(a.s)}–${fmt(a.e)}  ${a.name} (${a.stage})`).join("\n");
+    const done = () => toast("Jadwal disalin");
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, () => fallbackCopy(txt));
+    else fallbackCopy(txt);
+    return;
+  }
+  if (e.target.id === "clear") {
+    if (confirm(`Kosongkan semua pilihan ${DAY_INFO[ui.day].label}?`)) {
+      picked(ui.day).forEach(a => picks.delete(a.id)); save(); render(); toast("Jadwal hari ini dikosongkan");
+    }
+  }
+});
+function fallbackCopy(txt) {
+  const ta = document.createElement("textarea"); ta.value = txt; ta.style.position="fixed"; ta.style.opacity="0";
+  document.body.appendChild(ta); ta.select();
+  try { document.execCommand("copy"); toast("Jadwal disalin"); } catch(e) { toast("Gagal menyalin"); }
+  ta.remove();
+}
+document.addEventListener("input", e => { if (e.target.id === "q") { ui.q = e.target.value; renderAll(); } });
+
+// Open on today's festival day if it's during the festival
+const n = nowInfo(); if (n) ui.day = n.day;
+render();
+setInterval(() => { if (ui.view === "mine") render(); }, 60000);
+</script>
+</body>
+</html>
